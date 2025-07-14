@@ -1,1 +1,1 @@
-# talentradar-ai-analysis-service-rw
+# talentradar-ai-analysis-service-rwanda
