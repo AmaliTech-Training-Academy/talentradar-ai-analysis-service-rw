@@ -1,19 +1,5 @@
-# CODEOWNERS file for talentradar-ai-analysis-service-rw
-# This file defines code ownership for automatic review requests
-
-# Global ownership - Backend team reviewers
-* @nkbtemmy2 @nccharles @ishimweeli @bumlev
+# CODEOWNERS file for talentradar-ai-analysis-service-rw - Development Branch
+# Only .github directory has code owner requirements
 
 # GitHub configuration files - Final reviewers only
 /.github/ @bikaze @muhirwaJD
-
-# Production and staging critical files - Final reviewers
-/pom.xml @bikaze @muhirwaJD
-/build.gradle @bikaze @muhirwaJD
-/application.properties @bikaze @muhirwaJD
-/application.yml @bikaze @muhirwaJD
-/application-*.properties @bikaze @muhirwaJD
-/application-*.yml @bikaze @muhirwaJD
-/docker* @bikaze @muhirwaJD
-/Dockerfile* @bikaze @muhirwaJD
-/.env* @bikaze @muhirwaJD
