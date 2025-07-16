@@ -1,8 +1,6 @@
-# CODEOWNERS file for talentradar-ai-analysis-service-rw - Staging Branch
-# Backend team reviewers required for staging
-
-# Global ownership - Backend team reviewers
-* @nkbtemmy2 @nccharles @ishimweeli @bumlev
-
-# GitHub configuration files - Final reviewers only
+# Code owners for development branch - talentradar-ai-analysis-service-rw
+# .github folder is managed by bikaze and muhirwaJD
 /.github/ @bikaze @muhirwaJD
+
+# Everything else is managed by nccharles and ishimweeli
+* @nccharles @ishimweeli
