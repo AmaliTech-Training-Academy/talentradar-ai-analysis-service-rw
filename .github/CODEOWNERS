@@ -1,5 +1,8 @@
-# CODEOWNERS file for talentradar-ai-analysis-service-rw - Development Branch
-# Only .github directory has code owner requirements
+# CODEOWNERS file for talentradar-ai-analysis-service-rw - Staging Branch
+# Backend team reviewers required for staging
+
+# Global ownership - Backend team reviewers
+* @nkbtemmy2 @nccharles @ishimweeli @bumlev
 
 # GitHub configuration files - Final reviewers only
 /.github/ @bikaze @muhirwaJD
