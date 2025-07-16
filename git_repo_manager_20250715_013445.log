@@ -1,7 +1,0 @@
-[0;34m[INFO][0m Removing existing .git directory in talentradar-ai-analysis-service-rw
-[0;32m[SUCCESS][0m Removed existing .git directory in talentradar-ai-analysis-service-rw
-[0;34m[INFO][0m Initializing new Git repository in talentradar-ai-analysis-service-rw
-[0;32m[SUCCESS][0m Initialized new Git repository in talentradar-ai-analysis-service-rw
-[0;34m[INFO][0m Adding remote origin: git@github.com:AmaliTech-Training-Academy/talentradar-ai-analysis-service-rw.git
-[0;32m[SUCCESS][0m Added remote origin for talentradar-ai-analysis-service-rw
-[0;34m[INFO][0m Adding all files to Git in talentradar-ai-analysis-service-rw
