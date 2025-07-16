@@ -1,6 +1,7 @@
-# Code owners for development branch - talentradar-ai-analysis-service-rw
-# .github folder is managed by bikaze and muhirwaJD
-/.github/ @bikaze @muhirwaJD
+# Code owners for talentradar-ai-analysis-service-rw
+# Global owners for all files (except .github/)
+*  @nccharles @ishimweeli
 
-# Everything else is managed by nccharles and ishimweeli
-* @nccharles @ishimweeli
+# GitHub folder specific owners
+.github/ @bikaze @muhirwaJD
+
