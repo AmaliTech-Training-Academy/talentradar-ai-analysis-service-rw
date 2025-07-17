@@ -1,21 +1,23 @@
-name: CI Pipeline
+name: Java CI with Maven
 
 on:
   push:
-    branches: [ development, staging, production ]
+    branches: [ "development", "staging", "production" ]
   pull_request:
-    branches: [ development, staging, production ]
+    branches: [ "development", "staging", "production" ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Backend Tests
-      run: |
-        echo "Running Backend Tests..."
-        echo "Backend CI completed successfully!"
-        exit 0
+    - uses: actions/checkout@v3
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: "21"
+        distribution: "temurin"
+        cache: maven
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+    - name: Run tests
+      run: mvn test
