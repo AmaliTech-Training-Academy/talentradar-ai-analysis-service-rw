@@ -47,6 +47,10 @@ public class AssessmentInput {
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
     @OneToOne(mappedBy = "assessment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private AIAnalysisResult analysisResult;
 }

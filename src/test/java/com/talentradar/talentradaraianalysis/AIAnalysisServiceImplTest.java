@@ -39,10 +39,18 @@ class AIAnalysisServiceImplTest {
 
     @Test
     void testSimpleAIAnalysis() {
-        AnalysisRequest request = AnalysisRequest.builder()
-                .userId("user1")
+        AssessmentInputDto self = AssessmentInputDto.builder()
                 .scores(Map.of("Technical", 4, "Communication", 5, "Growth", 3))
                 .reflection("I improved my communication.")
+                .build();
+        AssessmentInputDto manager = AssessmentInputDto.builder()
+                .scores(Map.of("Technical", 4, "Communication", 5, "Growth", 3))
+                .reflection("")
+                .build();
+        AnalysisRequest request = AnalysisRequest.builder()
+                .userId("user1")
+                .selfAssessment(self)
+                .managerFeedback(manager)
                 .build();
         when(mockLLMService.analyzeReflection(anyString())).thenReturn(new MockLLMService.ReflectionAnalysisResult("positive", List.of("communication"), List.of()));
         when(mockLLMService.generateOverallFeedback(anyList(), anyList(), anyString(), any())).thenReturn("Great job!");

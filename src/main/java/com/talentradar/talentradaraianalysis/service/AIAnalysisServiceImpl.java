@@ -37,19 +37,68 @@ public class AIAnalysisServiceImpl implements AIAnalysisService {
     public AnalysisResponse analyzeAssessment(AnalysisRequest request) {
         log.info("Starting analysis for user: {}", request.getUserId());
 
-        // 1. Create and save the AssessmentInput entity
-        AssessmentInput assessmentInput = mapToAssessmentInput(request);
+        // Aggregate self and manager scores
+        Map<String, Integer> selfScores = request.getSelfAssessment().getScores();
+        Map<String, Integer> managerScores = request.getManagerFeedback().getScores();
+        Map<String, Double> aggregateScores = new java.util.HashMap<>();
+        for (String key : selfScores.keySet()) {
+            int self = selfScores.getOrDefault(key, 0);
+            int mgr = managerScores.getOrDefault(key, self); // fallback to self if manager missing
+            aggregateScores.put(key, (self + mgr) / 2.0);
+        }
+        for (String key : managerScores.keySet()) {
+            if (!aggregateScores.containsKey(key)) {
+                aggregateScores.put(key, managerScores.get(key).doubleValue());
+            }
+        }
+
+        // Calculate readiness score
+        double readinessScore = aggregateScores.values().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+
+        // Identify strengths (score >= 4) and improvement areas (score <= 3)
+        List<String> strengthsList = new ArrayList<>();
+        List<String> improvementAreasList = new ArrayList<>();
+        aggregateScores.forEach((skill, score) -> {
+            if (score >= 4) strengthsList.add(skill);
+            if (score <= 3) improvementAreasList.add(skill);
+        });
+
+        // Combine reflections
+        String combinedReflection = (request.getSelfAssessment().getReflection() == null ? "" : request.getSelfAssessment().getReflection()) +
+                " " + (request.getManagerFeedback().getReflection() == null ? "" : request.getManagerFeedback().getReflection());
+        MockLLMService.ReflectionAnalysisResult reflectionResult = mockLLMService.analyzeReflection(combinedReflection);
+        String overallFeedback = mockLLMService.generateOverallFeedback(strengthsList, improvementAreasList, combinedReflection, reflectionResult);
+
+        // Save assessment input (optional, can save both self and manager as separate entities if needed)
+        AssessmentInput assessmentInput = AssessmentInput.builder()
+                .userId(request.getUserId())
+                .skillScores(selfScores)
+                .reflection(request.getSelfAssessment().getReflection())
+                .type(AssessmentType.SELF_ASSESSMENT)
+                .build();
         assessmentInputRepository.save(assessmentInput);
-        log.debug("Saved assessment input for user: {}", request.getUserId());
 
-        // 2. Perform the mock AI analysis
-        AIAnalysisResult analysisResult = performMockAnalysis(assessmentInput);
-
-        // 3. Save the analysis result
+        // Save analysis result
+        AIAnalysisResult analysisResult = AIAnalysisResult.builder()
+                .userId(request.getUserId())
+                .assessment(assessmentInput)
+                .readinessScore(readinessScore)
+                .overallFeedback(overallFeedback)
+                .build();
+        // Create and associate strength entities
+        List<AnalysisStrength> analysisStrengths = strengthsList.stream()
+                .map(strength -> AnalysisStrength.builder().strength(strength).analysisResult(analysisResult).build())
+                .collect(Collectors.toList());
+        analysisResult.setStrengths(analysisStrengths);
+        // Create and associate improvement area entities
+        List<AnalysisImprovementArea> analysisImprovementAreas = improvementAreasList.stream()
+                .map(area -> AnalysisImprovementArea.builder().improvementArea(area).analysisResult(analysisResult).build())
+                .collect(Collectors.toList());
+        analysisResult.setImprovementAreas(analysisImprovementAreas);
         aiAnalysisResultRepository.save(analysisResult);
         log.info("Successfully completed and saved analysis for user: {}", request.getUserId());
 
-        // 4. Map to response DTO
+        // Map to response DTO
         return mapToAnalysisResponse(analysisResult);
     }
 
@@ -146,12 +195,8 @@ public class AIAnalysisServiceImpl implements AIAnalysisService {
     }
 
     private AssessmentInput mapToAssessmentInput(AnalysisRequest request) {
-        return AssessmentInput.builder()
-                .userId(request.getUserId())
-                .skillScores(request.getScores())
-                .reflection(request.getReflection())
-                .type(AssessmentType.SELF_ASSESSMENT) // Assuming self-assessment for now
-                .build();
+        // This method is no longer used, but kept for compatibility if needed elsewhere
+        return null;
     }
 
     private AIAnalysisResult performMockAnalysis(AssessmentInput assessmentInput) {

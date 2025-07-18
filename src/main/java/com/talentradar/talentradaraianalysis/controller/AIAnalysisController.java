@@ -20,7 +20,7 @@ public class AIAnalysisController {
 
     private final AIAnalysisService aiAnalysisService;
 
-    @PostMapping
+    @PostMapping("/analyze")
     public ResponseEntity<AnalysisResponse> analyze(@Valid @RequestBody AnalysisRequest request) {
         AnalysisResponse response = aiAnalysisService.analyzeAssessment(request);
         return ResponseEntity.ok(response);

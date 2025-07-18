@@ -46,10 +46,18 @@ class AIAnalysisControllerTest {
     @Test
     @DisplayName("Should return analysis response for valid request")
     void analyzeAssessment_ValidRequest_ReturnsOk() throws Exception {
-        AnalysisRequest req = AnalysisRequest.builder()
-                .userId("user1")
+        AssessmentInputDto self = AssessmentInputDto.builder()
                 .scores(Map.of("Technical", 4, "Growth", 3, "Communication", 5))
                 .reflection("Reflection.")
+                .build();
+        AssessmentInputDto manager = AssessmentInputDto.builder()
+                .scores(Map.of("Technical", 5, "Growth", 4, "Communication", 5))
+                .reflection("Manager feedback.")
+                .build();
+        AnalysisRequest req = AnalysisRequest.builder()
+                .userId("user1")
+                .selfAssessment(self)
+                .managerFeedback(manager)
                 .build();
         AnalysisResponse resp = AnalysisResponse.builder()
                 .userId("user1")
@@ -59,7 +67,7 @@ class AIAnalysisControllerTest {
                 .overallFeedback("Good job!")
                 .build();
         when(aiAnalysisService.analyzeAssessment(any())).thenReturn(resp);
-        mockMvc.perform(post("/api/ai-analysis")
+        mockMvc.perform(post("/api/ai-analysis/analyze")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -120,12 +128,20 @@ class AIAnalysisControllerTest {
     @Test
     @DisplayName("Should return 400 for validation error (less than 3 skills)")
     void analyzeAssessment_ValidationError_ReturnsBadRequest() throws Exception {
-        AnalysisRequest req = AnalysisRequest.builder()
-                .userId("user4")
+        AssessmentInputDto self = AssessmentInputDto.builder()
                 .scores(Map.of("Technical", 4))
                 .reflection("Reflection.")
                 .build();
-        mockMvc.perform(post("/api/ai-analysis")
+        AssessmentInputDto manager = AssessmentInputDto.builder()
+                .scores(Map.of("Technical", 4))
+                .reflection("Manager feedback.")
+                .build();
+        AnalysisRequest req = AnalysisRequest.builder()
+                .userId("user4")
+                .selfAssessment(self)
+                .managerFeedback(manager)
+                .build();
+        mockMvc.perform(post("/api/ai-analysis/analyze")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isBadRequest())
