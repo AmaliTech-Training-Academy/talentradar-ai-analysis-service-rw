@@ -1,0 +1,75 @@
+# AWS ECR Deployment Workflow
+name: Deploy Application to AWS ECR
+
+on:
+  push:
+    branches: ["development", "staging", "production"]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "development"
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/staging' && 'staging') || (github.ref == 'refs/heads/production' && 'production') || 'development' }}
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+      ENV_NAME: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/staging' && 'staging') || (github.ref == 'refs/heads/production' && 'production') || 'development' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Test AWS permissions
+        run: |    
+          echo "=== Testing AWS Permissions ==="
+          aws sts get-caller-identity --region $AWS_REGION || {
+            echo "❌ Failed to get AWS caller identity"
+            exit 1
+          }
+          aws ecr describe-repositories --repository-names $ECR_REPOSITORY --region $AWS_REGION > /dev/null || {
+            echo "❌ Failed to access ECR repository"
+            exit 1
+          }
+          echo "✅ AWS permissions OK"
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        run: |
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          COMMIT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
+          UNIQUE_TAG="${ENV_NAME}-${TIMESTAMP}-${COMMIT_SHA}"
+
+          echo "Building image: $ECR_REGISTRY/$ECR_REPOSITORY:$UNIQUE_TAG"
+          
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$UNIQUE_TAG \
+            --build-arg SPRING_PROFILES_ACTIVE=$ENV_NAME .
+
+          echo "Pushing image to ECR..."
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$UNIQUE_TAG
+
+          echo "✅ Image pushed: $ECR_REGISTRY/$ECR_REPOSITORY:$UNIQUE_TAG"
