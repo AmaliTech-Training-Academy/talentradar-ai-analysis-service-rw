@@ -23,9 +23,3 @@ Thumbs.db
 *.swo
 *~
 
-# Build artifacts
-target/
-build/
-dist/
-node_modules/
-.env
